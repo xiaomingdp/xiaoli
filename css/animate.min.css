@@ -1,0 +1,1613 @@
+<template>
+  <div class="workorder-info new-basic-info">
+    <header class="workorder-info-header" style="font-size: 16px" v-if="isEdit">
+      <el-steps :active="stepActive" finish-status="success" align-center>
+        <el-step
+          :title="item.label"
+          v-for="item in jobStatusList"
+          :key="item.value"
+        ></el-step>
+      </el-steps>
+    </header>
+    <main class="workorder-info-main" id="main-content">
+      <!--            <div class="info-item-switch" v-if="isEdit">-->
+      <!--                <el-switch v-model="editingSwitch" active-color="#13ce66"></el-switch>-->
+      <!--                <span>编辑模式</span>-->
+      <!--            </div>-->
+      <!-- //工单需求 -->
+      <div class="workorder-info-main-item new-basic-info-item">
+        <div class="new-basic-info-item-top">
+          <div class="top-title">
+            <span class="title-text">工单需求</span>
+          </div>
+        </div>
+        <div class="new-basic-info-item-form">
+          <el-form
+            ref="jobformRef"
+            :model="WorkOrderRequirements.form"
+            :rules="WorkOrderRequirements.rule"
+            label-width="120px"
+            label-position="left"
+          >
+            <el-row :gutter="24">
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="工单名称" prop="jobName">
+                  <el-input
+                    id="jobName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.jobName"
+                    rows="4"
+                    :disabled="bool"
+                    :placeholder="bool ? '' : `输入工单名称`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="客户区域" prop="clientArea">
+                  <el-select
+                    id="clientArea"
+                    v-model="WorkOrderRequirements.form.clientArea"
+                    :placeholder="`请选择客户区域`"
+                    clearable
+                    placement="top"
+                    :disabled="bool"
+                    @change="(e) => WorkOrderRequirements.changeArr(e, 'wrapperList')"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.wrapperList.areaList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="客户省份" prop="clientProvince">
+                  <el-select
+                    id="clientProvince"
+                    v-model="WorkOrderRequirements.form.clientProvince"
+                    :placeholder="`请选择客户省份`"
+                    clearable
+                    placement="top"
+                    :disabled="bool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.wrapperList.provinceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="服务内容" prop="job1ServiceTypeRelList">
+                  <el-select
+                    id="job1ServiceTypeRelList"
+                    v-model="WorkOrderRequirements.form.job1ServiceTypeRelList"
+                    :placeholder="`请选择服务内容`"
+                    clearable
+                    placement="top"
+                    :disabled="bool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.wrapperList.serviceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="优先级" prop="priorityId">
+                  <el-select
+                    id="priorityId"
+                    v-model="WorkOrderRequirements.form.priorityId"
+                    :placeholder="`请选择优先级`"
+                    clearable
+                    placement="top"
+                    :disabled="bool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.wrapperList.priorityList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="客户单位全称" prop="clientOrgFullname">
+                  <el-input
+                    id="clientOrgFullname"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.clientOrgFullname"
+                    rows="4"
+                    :disabled="bool"
+                    :placeholder="bool ? '' : `输入客户单位全称`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="联系人" prop="contactPerson">
+                  <el-input
+                    id="contactPerson"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.contactPerson"
+                    rows="4"
+                    :disabled="bool"
+                    :placeholder="bool ? '' : `输入联系人`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="联系方式" prop="contactPhone">
+                  <el-input
+                    id="contactPhone"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.contactPhone"
+                    rows="4"
+                    :disabled="bool"
+                    :placeholder="bool ? '' : `输入联系方式`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="预计开始时间" prop="planStartTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.planStartTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="bool"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'planStartTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="预计结束时间" prop="planStartTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.planEndTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="bool"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'planEndTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="详细描述" prop="description">
+                  <el-input
+                    id="description"
+                    type="textarea"
+                    v-model="WorkOrderRequirements.form.description"
+                    rows="4"
+                    :disabled="bool"
+                    :placeholder="bool ? '' : `输入详细描述`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="收费工单" prop="pay">
+                  <el-select
+                    id="pay"
+                    v-model="WorkOrderRequirements.form.pay"
+                    :placeholder="`请选择收费工单`"
+                    clearable
+                    placement="top"
+                    :disabled="bool"
+                    @change="(e) => WorkOrderRequirements.changeHandle(e, 'pay')"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.wrapperList.booleanType"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+      </div>
+      <!-- 工单需求 -->
+
+      <!-- //项目信息 -->
+      <div class="workorder-info-main-item new-basic-info-item" v-if="payType == 1">
+        <div class="new-basic-info-item-top">
+          <div class="top-title">
+            <span class="title-text">项目信息</span>
+          </div>
+        </div>
+        <div class="new-basic-info-item-form">
+          <el-form
+            ref="proFormRef"
+            :model="WorkOrderRequirements.form"
+            label-width="120px"
+            label-position="left"
+          >
+            <el-row :gutter="24">
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目编码" prop="projectNumber">
+                  <el-select
+                    id="projectNumber"
+                    v-model="WorkOrderRequirements.form.projectNumber"
+                    :placeholder="`请选择项目编码`"
+                    clearable
+                    placement="top"
+                    @change="
+                      (e) => WorkOrderRequirements.changeHandle(e, 'projectNumber')
+                    "
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .projectList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目名称" prop="projectName">
+                  <el-input
+                    id="projectName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.projectName"
+                    rows="4"
+                    :disabled="true"
+                    :placeholder="projectListBool ? '' : `输入项目名称`"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目状态" prop="projectStatusName">
+                  <el-select
+                    id="projectStatusName"
+                    v-model="WorkOrderRequirements.form.projectStatusName"
+                    :placeholder="`请选择项目状态`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .projectStatusList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属区域" prop="projectAreaOrgId">
+                  <el-select
+                    id="projectAreaOrgId"
+                    v-model="WorkOrderRequirements.form.projectAreaOrgId"
+                    :placeholder="`请选择所属区域`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                    @change="
+                      (e) => WorkOrderRequirements.changeArr(e, 'useProjectWrapperList')
+                    "
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .areaList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属省份" prop="projectProvinceOrgId">
+                  <el-select
+                    id="projectProvinceOrgId"
+                    v-model="WorkOrderRequirements.form.projectProvinceOrgId"
+                    :placeholder="`请选择所属省份`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .provinceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="运营服务经理" prop="projectRunManagerId">
+                  <el-select
+                    id="projectRunManagerId"
+                    v-model="WorkOrderRequirements.form.projectRunManagerId"
+                    :placeholder="`请选择运营服务经理`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .userList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目销售" prop="projectSellUserId">
+                  <el-select
+                    id="projectSellUserId"
+                    v-model="WorkOrderRequirements.form.projectSellUserId"
+                    :placeholder="`请选择项目销售`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useProjectWrapperList
+                        .userList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+      </div>
+      <!-- 项目信息 -->
+
+      <!-- //合同信息 -->
+      <div class="workorder-info-main-item new-basic-info-item" v-if="payType == 1">
+        <div class="new-basic-info-item-top">
+          <div class="top-title">
+            <span class="title-text">合同信息</span>
+          </div>
+        </div>
+        <div class="new-basic-info-item-form">
+          <el-form
+            ref="contractFormRef"
+            :model="WorkOrderRequirements.form"
+            label-width="120px"
+            label-position="left"
+          >
+            <el-row :gutter="24">
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="合同编码" prop="contractCode">
+                  <el-select
+                    id="contractCode"
+                    v-model="WorkOrderRequirements.form.contractCode"
+                    :placeholder="`请选择合同编码`"
+                    clearable
+                    placement="top"
+                    @change="(e) => WorkOrderRequirements.changeHandle(e, 'contractCode')"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useContractWrapperList
+                        .projectList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="合同名称" prop="contractName">
+                  <el-input
+                    id="contractName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.contractName"
+                    rows="4"
+                    :disabled="true"
+                    placeholder="输入合同名称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="甲方签约名称" prop="companyName">
+                  <el-input
+                    id="companyName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.companyName"
+                    rows="4"
+                    :disabled="true"
+                    placeholder="输入甲方签约名称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="用户单位全称" prop="consumerFullName">
+                  <el-input
+                    id="consumerFullName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.consumerFullName"
+                    rows="4"
+                    :disabled="true"
+                    placeholder="输入用户单位全称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属区域" prop="areaOrgId">
+                  <el-select
+                    id="areaOrgId"
+                    v-model="WorkOrderRequirements.form.areaOrgId"
+                    placeholder="`请选择所属区域`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                    @change="
+                      (e) => WorkOrderRequirements.changeArr(e, 'useContractWrapperList')
+                    "
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useContractWrapperList
+                        .areaList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属省份" prop="proviceOrgId">
+                  <el-select
+                    id="proviceOrgId"
+                    v-model="WorkOrderRequirements.form.proviceOrgId"
+                    :placeholder="`请选择所属省份`"
+                    clearable
+                    placement="top"
+                    :disabled="true"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useContractWrapperList
+                        .provinceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="服务起始时间" prop="serverStartTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.serverStartTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="true"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'serverStartTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="服务结束时间" prop="serverEndTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.serverEndTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="true"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'serverEndTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+      </div>
+      <!-- 合同信息 -->
+
+      <!-- //免费项目信息 -->
+      <div class="workorder-info-main-item new-basic-info-item" v-if="payType == 0">
+        <div class="new-basic-info-item-top">
+          <div class="top-title">
+            <span class="title-text">免费项目信息</span>
+          </div>
+        </div>
+        <div class="new-basic-info-item-form">
+          <el-form
+            ref="freeProFormRef"
+            :model="WorkOrderRequirements.form"
+            label-width="120px"
+            label-position="left"
+          >
+            <el-row :gutter="24">
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目编码" prop="projectNumber">
+                  <el-input
+                    id="projectNumber"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.projectNumber"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入项目编码"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目名称" prop="projectName">
+                  <el-input
+                    id="projectName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.projectName"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入项目名称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目状态" prop="projectStatusName">
+                  <el-select
+                    id="projectStatusName"
+                    v-model="WorkOrderRequirements.form.projectStatusName"
+                    :placeholder="`请选择项目状态`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useFreeProjectWrapperList
+                        .projectStatusList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属区域" prop="projectAreaOrgId">
+                  <el-select
+                    id="projectAreaOrgId"
+                    v-model="WorkOrderRequirements.form.projectAreaOrgId"
+                    :placeholder="`请选择所属区域`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.changeArr(e, 'useFreeProjectWrapperList')
+                    "
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useFreeProjectWrapperList
+                        .areaList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属省份" prop="projectProvinceOrgId">
+                  <el-select
+                    id="projectProvinceOrgId"
+                    v-model="WorkOrderRequirements.form.projectProvinceOrgId"
+                    :placeholder="`请选择所属省份`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useFreeProjectWrapperList
+                        .provinceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="运营服务经理" prop="projectRunManagerId">
+                  <el-select
+                    id="projectRunManagerId"
+                    v-model="WorkOrderRequirements.form.projectRunManagerId"
+                    :placeholder="`请选择运营服务经理`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useFreeProjectWrapperList
+                        .userList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="项目销售" prop="projectSellUserId">
+                  <el-select
+                    id="projectSellUserId"
+                    v-model="WorkOrderRequirements.form.projectSellUserId"
+                    :placeholder="`请选择项目销售`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements.useFreeProjectWrapperList
+                        .userList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+      </div>
+      <!-- 免费项目信息 -->
+
+      <!-- //免费合同信息 -->
+      <div class="workorder-info-main-item new-basic-info-item" v-if="payType == 0">
+        <div class="new-basic-info-item-top">
+          <div class="top-title">
+            <span class="title-text">免费合同信息</span>
+          </div>
+        </div>
+        <div class="new-basic-info-item-form">
+          <el-form
+            ref="freeContractFormRef"
+            :model="WorkOrderRequirements.form"
+            label-width="120px"
+            label-position="left"
+          >
+            <el-row :gutter="24">
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="合同编码" prop="contractCode">
+                  <el-input
+                    id="contractCode"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.contractCode"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入合同编码"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="合同名称" prop="contractName">
+                  <el-input
+                    id="contractName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.contractName"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入合同名称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="甲方签约名称" prop="companyName">
+                  <el-input
+                    id="companyName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.companyName"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入甲方签约名称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="用户单位全称" prop="consumerFullName">
+                  <el-input
+                    id="consumerFullName"
+                    type="input"
+                    v-model="WorkOrderRequirements.form.consumerFullName"
+                    rows="4"
+                    :disabled="projectListBool"
+                    placeholder="输入用户单位全称"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属区域" prop="areaOrgId">
+                  <el-select
+                    id="areaOrgId"
+                    v-model="WorkOrderRequirements.form.areaOrgId"
+                    placeholder="`请选择所属区域`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.changeArr(e, 'useFreeContractWrapperList')
+                    "
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements
+                        .useFreeContractWrapperList.areaList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="所属省份" prop="proviceOrgId">
+                  <el-select
+                    id="proviceOrgId"
+                    v-model="WorkOrderRequirements.form.proviceOrgId"
+                    :placeholder="`请选择所属省份`"
+                    clearable
+                    placement="top"
+                    :disabled="projectListBool"
+                  >
+                    <el-option
+                      v-for="optionItem in WorkOrderRequirements
+                        .useFreeContractWrapperList.provinceList"
+                      :key="optionItem.value"
+                      :label="optionItem.label"
+                      :value="optionItem.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="服务起始时间" prop="serverStartTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.serverStartTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="projectListBool"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'serverStartTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+              <el-col :xl="{ span: 6 }" :lg="{ span: 8 }">
+                <el-form-item label="服务结束时间" prop="serverEndTime">
+                  <el-date-picker
+                    v-model="WorkOrderRequirements.form.serverEndTime"
+                    type="date"
+                    format="YYYY-MM-DD"
+                    value-format="YYYY-MM-DD"
+                    :disabled="projectListBool"
+                    placeholder="选择日期"
+                    @change="
+                      (e) =>
+                        WorkOrderRequirements.handleDatePickerChange(e, 'serverEndTime')
+                    "
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+      </div>
+      <!-- 免费合同信息 -->
+
+      <info-item
+        title="指派工程师"
+        :jobObj="jobObj"
+        v-if="isEdit"
+        :job-info="jobInfo"
+        :ref="getRef"
+        :disabled="
+          !editingSwitch
+            ? true
+            : isEdit && [-1, -2].includes(jobInfo.jobStatus)
+            ? true
+            : !(servicePermission.om == 1 && stepActive < 3)
+        "
+        :is-edit="isEdit"
+      >
+      </info-item>
+
+      <info-item
+        title="工程师工作详情"
+        v-if="isEdit && (stepActive >= 5 || jobInfo.jobStatus === -1)"
+        :job-info="jobInfo"
+        :jobObj="jobObj"
+        :ref="getRef"
+        :disabled="!editingSwitch || !(stepActive === 6 && servicePermission.om == 1)"
+        :is-edit="isEdit"
+      >
+      </info-item>
+      <info-item title="客户评价" :job-info="jobInfo" :jobObj="jobObj" :ref="getRef">
+      </info-item>
+      <info-item
+        title="客户签名"
+        v-show="jobInfo.jobStatus > 5"
+        :job-info="jobInfo"
+        :jobObj="jobObj"
+        :ref="getRef"
+        :disabled="true"
+        :is-edit="false"
+      >
+      </info-item>
+
+      <info-item
+        title="驳回理由"
+        v-if="isEdit && jobInfo.jobStatus === -1"
+        :job-info="jobInfo"
+        :jobObj="jobObj"
+        :disabled="true"
+      />
+    </main>
+    <footer
+      class="workorder-info-footer new-basic-info__footer"
+      v-if="isEdit ? stepActive < 3 : true"
+    >
+      <el-button @click="handleCancelBtnClick">取消</el-button>
+      <el-button type="primary" @click="handleSaveBtnClick" :disabled="!editingSwitch"
+        >保存</el-button
+      >
+    </footer>
+    <footer
+      class="workorder-info-footer new-basic-info__footer"
+      v-if="isEdit && stepActive === 6 && servicePermission.om == 1"
+    >
+      <el-button @click="handleCancelBtnClick">取消</el-button>
+      <el-button type="primary" @click="handleAdjustBtnClick" :disabled="!editingSwitch">
+        {{ stepActive == 6 ? "归档" : "保存" }}
+      </el-button>
+    </footer>
+  </div>
+</template>
+<script>
+/**
+ * editingSwitch: 权限总开关, 会从接口取值判断是否有编辑权限
+ * 运营经理编辑条件: 工程师已认领之后无法编辑 靠状态判断
+ * 客服编辑条件: 无法指派工程师, 有指派工程师之后无法编辑
+ */
+import {
+  defineComponent,
+  reactive,
+  ref,
+  onMounted,
+  computed,
+  toRaw,
+  getCurrentInstance,
+} from "vue";
+import { useStore } from "vuex";
+import { useRoute, useRouter } from "vue-router";
+import InfoItem from "./common/info-item";
+import { ElLoading, ElMessage } from "element-plus";
+import {
+  addJob1,
+  updateJob1,
+  findJob1Info,
+  verifyJob1,
+  autoWorkOrderDetail,
+  findJobEvaluateInfo,
+  findServerProjectList,
+  findByProjectNumber,
+  findProviceOrgForCmc,
+} from "@/api";
+import to from "await-to-js";
+import { jobStatusList as _jobStatusList, projectStatusList } from "@/assets/list";
+import Message from "element-plus/lib/el-message";
+import mitt from "../../../util/mitt";
+import show from "../../../util/show";
+import { useDemandWrapperList } from "./common/use-info.js";
+import dayjs from "dayjs";
+export default defineComponent({
+  components: {
+    InfoItem,
+  },
+  setup() {
+    const payType = ref(0);
+    const router = useRouter();
+    const route = useRoute();
+    const store = useStore();
+    const stepActive = ref(1);
+    const refList = ref([]);
+    var jobInfo = reactive({});
+    let jobObj = ref({});
+    const jobformRef = ref(null);
+    const isEdit = Reflect.has(route.query, "jobId");
+    // const isEdit = false;
+    const editingSwitch = ref(true);
+    let jobStatusList = ref([]);
+    const servicePermission = computed(() => store.state.servicePermission);
+    function byShowData() {
+      autoWorkOrderDetail(router.currentRoute.value.query.workOrderId).then((res) => {
+        jobObj.value = res.job1;
+        payType.value = res.job1.pay;
+      });
+    }
+
+    const getRef = (refInstance) => {
+      if (refInstance) {
+      }
+      if (refInstance && !refList.value.find((t) => t.title === refInstance.title)) {
+        refList.value.push(refInstance);
+      }
+    };
+    mitt.on("pay-change", function (e) {
+      payType.value = e;
+    });
+
+    const findJobInfo = () => {
+      if (!Reflect.has(route.query, "jobId")) {
+        return false;
+      }
+      const loading = ElLoading.service({ target: ".workorder-info" });
+      Promise.all([
+        findJob1Info(route.query.jobId),
+        findJobEvaluateInfo(route.query.jobId),
+      ])
+        .then(([res, res1]) => {
+          console.log(res);
+          if (res.code === 200) {
+            payType.value = res.data.pay;
+            let result = res.data || {};
+            if (result.jobStatus === -1) {
+              jobStatusList.value = [{ label: "已驳回", value: -1 }];
+            } else if (result.jobStatus === -2) {
+              jobStatusList.value = [{ label: "已作废", value: -2 }];
+            } else {
+              jobStatusList.value = _jobStatusList.slice(0, 7);
+            }
+            let index = jobStatusList.value.findIndex(
+              (t) => t.value === Number(result.jobStatus)
+            );
+            stepActive.value = index === 0 ? 0 : index + 1;
+            for (const key in result) {
+              if (Object.hasOwnProperty.call(result, key)) {
+                Reflect.set(jobInfo, key, result[key]);
+                if (isEdit) {
+                  WorkOrderRequirements.value.form = {
+                    ...jobInfo,
+                  };
+                  var job1ServiceTypeRelListfied = Reflect.get(
+                    jobInfo,
+                    "job1ServiceTypeRelList"
+                  );
+                  var fied = toRaw(job1ServiceTypeRelListfied);
+                  if (fied) {
+                    WorkOrderRequirements.value.form.job1ServiceTypeRelList =
+                      fied[0].servicetypeId;
+                  }
+                }
+              }
+            }
+          }
+          if (res1.code === 200) {
+            let result1 = res1.data || {};
+            for (const key in result1) {
+              if (Object.hasOwnProperty.call(result1, key)) {
+                Reflect.set(jobInfo, key, result1[key]);
+              }
+            }
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          loading.close();
+        });
+    };
+    const validateJobform = () => {
+      var flagJobformRef = false;
+      jobformRef.value.validate((valid) => {
+        if (valid) {
+          if (Reflect.has(WorkOrderRequirements.value.form, "job1ServiceTypeRelList")) {
+            let _form = toRaw(WorkOrderRequirements.value.form);
+            let findJob1ServiceTypeRel = [];
+            if (wrapperList.serviceList) {
+              findJob1ServiceTypeRel = wrapperList.serviceList.find(
+                (t) => t.value === WorkOrderRequirements.value.form.job1ServiceTypeRelList
+              );
+            }
+            flagJobformRef = Object.assign({}, _form, {
+              planStartTime:
+                typeof _form.planStartTime === "string"
+                  ? _form.planStartTime
+                  : dayjs(_form.planStartTime).format("YYYY-MM-DD"),
+              planEndTime:
+                typeof _form.planEndTime === "string"
+                  ? _form.planEndTime
+                  : dayjs(_form.planEndTime).format("YYYY-MM-DD"),
+              job1ServiceTypeRelList: [
+                {
+                  servicetypeName: findJob1ServiceTypeRel.label,
+                  servicetypeId: findJob1ServiceTypeRel.value,
+                },
+              ],
+            });
+          }
+        }
+      });
+      return flagJobformRef;
+    };
+    const submitForm = async (data, orderInfo) => {
+      let submitFn = addJob1;
+      if (isEdit) {
+        submitFn = updateJob1;
+        Reflect.set(data, "jobId", route.query.jobId);
+      }
+      show.loading("main-content");
+      const [err, res] = await to(submitFn(data));
+      show.loadingFinish();
+      if (!err && res.code === 200) {
+        router.back();
+      }
+      ElMessage({
+        message: err ? err.message : res.msg,
+        type: err || res.code !== 200 ? "error" : "success",
+      });
+    };
+
+    const handleCancelBtnClick = () => {
+      router.back();
+    };
+
+    const handleSaveBtnClick = () => {
+      let projects = refList.value.filter((value) => {
+        if (payType.value == 0) {
+          return value.title == "免费项目信息" || value.title == "免费合同信息";
+        } else {
+          return value.title == "项目信息" || value.title == "合同信息";
+        }
+      });
+      let orderInfo = WorkOrderRequirements.value.form;
+      let engineer = refList.value.find((value) => value.title == "指派工程师");
+      // slice 最多提交4个表单
+      // let checkList = filter.reduce((prv, cur) => {
+      //     console.log(cur.title)
+      //     console.log(cur)
+      //     let result = cur.validateForm()
+      //     return prv.concat(result || [])
+      // }, [])
+
+      console.log(validateJobform());
+      let obj = {
+        ...orderInfo.validateForm(),
+        job1ContractProject: Object.assign(
+          projects[0].validateForm(),
+          projects[1].validateForm()
+        ),
+        ...engineer?.validateForm(),
+      };
+      if (router.currentRoute.value.query.jobId) {
+        obj.var10 = "5";
+      }
+      if (router.currentRoute.value.query.workOrderId) {
+        orderInfo.form.job1ServiceTypeRelList = 8;
+        obj = {
+          ...orderInfo.form,
+          workOrderId: router.currentRoute.value.query.workOrderId,
+        };
+        obj.job1ServiceTypeRelList = [{ servicetypeName: "会议保障", servicetypeId: 8 }];
+        if (obj.clientProvince) {
+          // 省份code
+          var provinceListCode = useDemandWrapperList(store)[0].provinceList.find(
+            (item) => item.label == obj.clientProvince
+          );
+          if (provinceListCode) {
+            obj.clientProvince = provinceListCode.value;
+            obj.var2 = provinceListCode.label;
+          }
+        }
+        if (obj.clientArea) {
+          // 区域code
+          var clientAreaCode = useDemandWrapperList(store)[0].areaList.find(
+            (item) => item.label == obj.clientArea
+          );
+          if (clientAreaCode) {
+            obj.clientArea = clientAreaCode.value;
+            obj.var1 = clientAreaCode.label;
+          }
+        }
+      }
+      if (router.currentRoute.value.query.jobId) {
+        obj.job1ServiceTypeRelList = orderInfo.validateForm().job1ServiceTypeRelList;
+      }
+      if (isEdit) {
+        Reflect.set(obj.job1ContractProject, "jobId", route.query.jobId);
+        Reflect.set(obj, "jobNum", jobInfo.jobNum);
+      }
+
+      submitForm(obj, orderInfo);
+    };
+
+    const handleAdjustBtnClick = async () => {
+      let jobPower = refList.value
+        .find((value) => value.title == "工程师工作详情")
+        .validateForm();
+      let _data = {
+        jobId: route.query.jobId,
+        useDay: jobPower.useDay,
+        realUseDay: jobPower.realUseDay,
+        repairCost: jobPower.repairCost,
+        accommodationCost: jobPower.accommodationCost,
+        var1: jobPower.var1,
+        var2: jobPower.var2,
+        subsidyMoney: jobPower.subsidyMoney,
+        rewardMoney: jobPower.rewardMoney,
+      };
+
+      const [err, res] = await to(verifyJob1(_data));
+      if (!err && res.code === 200) {
+        router.back();
+      }
+      Message({
+        type: err || res.code !== 200 ? "error" : "success",
+        message: err ? err.message : res.msg,
+      });
+    };
+
+    onMounted(() => {
+      if (router.currentRoute.value.query.workOrderId) {
+        byShowData();
+      }
+      findJobInfo();
+    });
+
+    const projectList = ref([]);
+    let WorkOrderRequirements = ref({});
+    const wrapperList = useDemandWrapperList(store);
+    const _instance = getCurrentInstance();
+    const checkTelephoneNumber = (rule, value, callback) => {
+      let phoneReg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+      let fixReg = /^([0-9]{3,4}-)?[0-9]{7,8}$/;
+      if ((value && phoneReg.test(value)) || fixReg.test(value)) {
+        callback();
+      } else {
+        callback(new Error(value ? "联系方式格式错误" : "请输入联系方式"));
+      }
+    };
+    const managerCheck = (rule, value, callback) => {
+      let refList = _instance.parent.setupState.refList;
+      let engineer = refList.find((t) => t.title === "指派工程师");
+      if (engineer && engineer.form.charge3UserId && !value) {
+        callback(new Error("请选择日期"));
+      } else {
+        callback();
+      }
+    };
+
+    const bool = !editingSwitch.value
+      ? true
+      : isEdit && [-1, -2].includes(jobInfo.jobStatus)
+      ? true
+      : !!(servicePermission.om == 1 && stepActive.value < 3);
+    const projectListBool = !editingSwitch.value
+      ? true
+      : jobInfo.jobStatus === -1 && servicePermission.om == 1
+      ? false
+      : jobInfo.jobStatus === -2
+      ? true
+      : servicePermission.cs == 1
+      ? !!jobInfo.charge3UserId
+      : stepActive.value >= 3;
+
+    WorkOrderRequirements.value = {
+      rule: {
+        jobName: [{ required: true, message: "请输入工单名称", trigger: "blur" }],
+        // clientArea: [{ required: true, message: '请选择客户区域', trigger: 'blur' }],
+        // clientProvince: [{ required: true, message: '请选择客户省份', trigger: 'blur' }],
+        job1ServiceTypeRelList: [
+          { required: true, message: "请选择服务内容", trigger: "blur" },
+        ],
+        clientOrgFullname: [
+          { required: true, message: "请输入客户单位全称", trigger: "blur" },
+        ],
+        contactPerson: [{ required: true, message: "请输入联系人", trigger: "blur" }],
+        contactPhone: [
+          { required: true, validator: checkTelephoneNumber, trigger: "blur" },
+        ],
+        description: [{ required: true, message: "请输入详细描述", trigger: "blur" }],
+        pay: [{ required: true, message: "请选择工单类型", trigger: "blur" }],
+        planStartTime: [{ validator: managerCheck, trigger: "blur" }],
+        planEndTime: [{ validator: managerCheck, trigger: "blur" }],
+      },
+      form: {
+        // 工单需求
+        jobName: "",
+        clientArea: "",
+        clientProvince: "",
+        job1ServiceTypeRelList: "", // 起初是数组
+        priorityId: "",
+        clientOrgFullname: "",
+        contactPerson: "",
+        contactPhone: "",
+        planStartTime: "",
+        planEndTime: "",
+        description: "",
+        var1: "",
+        var2: "",
+        pay: "",
+        //项目信息
+        projectNumber: "",
+        projectStatus: "",
+        projectName: "",
+        projectStatusName: "",
+        projectAreaOrgId: "",
+        projectAreaOrgName: "",
+        projectProvinceOrgId: "",
+        projectProvinceOrgName: "",
+        projectRunManagerId: "",
+        projectRunManagerName: "",
+        projectSellUserId: "",
+        projectSellUserName: "",
+
+        //合同信息
+        contractId: "",
+        contractCode: "",
+        contractName: "",
+        companyName: "",
+        consumerFullName: "",
+        areaOrgId: "",
+        areaName: "",
+        proviceOrgId: "",
+        proviceName: "",
+        serverStartTime: "",
+        serverEndTime: "",
+      },
+      changeHandle: (e, item) => {
+        if (item == "projectNumber") {
+          // 项目编码选择后, 获取选中项目数据赋值给form表单
+          let find = WorkOrderRequirements.value.useProjectWrapperList.projectList.find(
+            (t) => t.value === e
+          );
+          if (find) {
+            var WorkOrderform = toRaw(WorkOrderRequirements.value.form);
+            var findToraw = toRaw(find);
+            WorkOrderform = {
+              ...WorkOrderform,
+              ...findToraw,
+              projectSellUserId: findToraw.sellUserId,
+              projectSellUserName: findToraw.sellUserName,
+              projectName: findToraw.projectName,
+            };
+
+            WorkOrderRequirements.value.form = WorkOrderform;
+          }
+          // 根据projectNumber获取关联的合同列表
+          getContractListByProjectNumber(e);
+        } else if (item === "contractCode") {
+          useContractWrapperListChange(e);
+          // 获取合同选中项赋值给form表单
+        } else if (["areaList", "provinceList", "userList"].includes(item.optionProp)) {
+          // item.prop === 'clientProvince' && mitt.emit('province-change', e)
+          if (item === "clientArea") {
+            mitt.emit("area-change", e);
+            setForm("clientProvince", "");
+          }
+          // 区域和省份选择后带出name
+          let find = wrapperList[item.optionProp].find((t) => t.value === e);
+          setForm(item.propName, find ? find.label : "");
+        } else if (item === "pay") {
+          mitt.emit("pay-change", e);
+          if (e == 0) {
+            //免费工单
+            var obj = {
+              //项目信息
+              projectNumber: "",
+              projectStatus: "",
+              projectName: "",
+              projectStatusName: "",
+              projectAreaOrgId: "",
+              projectAreaOrgName: "",
+              projectProvinceOrgId: "",
+              projectProvinceOrgName: "",
+              projectRunManagerId: "",
+              projectRunManagerName: "",
+              projectSellUserId: "",
+              projectSellUserName: "",
+
+              //合同信息
+              contractId: "",
+              contractCode: "",
+              contractName: "",
+              companyName: "",
+              consumerFullName: "",
+              areaOrgId: "",
+              areaName: "",
+              proviceOrgId: "",
+              proviceName: "",
+              serverStartTime: "",
+              serverEndTime: "",
+            };
+            var form = toRaw(WorkOrderRequirements.value.form);
+            var form_ = {
+              ...form,
+              ...obj,
+            };
+            WorkOrderRequirements.value.form = form_;
+          }
+        }
+        /**
+       * else if (item.prop === 'job1ServiceTypeRelList') {
+          // 需求变化, 目前只支持单选
+          setForm('job1ServiceTypeRelList', form['job1ServiceTypeRelList'].slice(form['job1ServiceTypeRelList'].length - 1))
+        }
+       *
+       */
+      },
+      changeArr: (e, flag) => {
+        findProviceOrgForCmcFn(e, flag);
+      },
+      handleDatePickerChange: (e, flag) => {
+        if (flag.includes("End")) {
+          if (flag == "planEndTime") {
+            if (
+              new Date(WorkOrderRequirements.value.form.planEndTime) <
+              new Date(WorkOrderRequirements.value.form.planStartTime)
+            ) {
+              WorkOrderRequirements.value.form.planEndTime = "";
+              ElMessage({
+                message: "结束时间不能小于开始时间",
+                type: "error",
+              });
+            }
+          }
+
+          if (flag == "serverEndTime") {
+            if (
+              new Date(WorkOrderRequirements.value.form.serverEndTime) <
+              new Date(WorkOrderRequirements.value.form.serverStartTime)
+            ) {
+              WorkOrderRequirements.value.form.planEndTime = "";
+              ElMessage({
+                message: "结束时间不能小于开始时间",
+                type: "error",
+              });
+            }
+          }
+        }
+      },
+      wrapperList: wrapperList[0],
+      // 项目信息下拉框
+      useProjectWrapperList: {
+        areaList: store.state.areaList,
+        provinceList: store.state.provinceList,
+        projectList: [],
+        projectStatusList,
+        userList: store.getters.getUserList,
+      },
+      //合同信息下拉框
+      useContractWrapperList: {
+        areaList: store.state.areaList,
+        provinceList: store.state.provinceList,
+        contractCodeList: [],
+      },
+      // 免费项目
+      useFreeProjectWrapperList: {
+        areaList: store.state.areaList,
+        provinceList: store.state.provinceList,
+        projectList: [],
+        projectStatusList,
+        userList: store.getters.getUserList,
+      },
+      // 免费合同信息下拉框
+      useFreeContractWrapperList: {
+        areaList: store.state.areaList,
+        provinceList: store.state.provinceList,
+        contractCodeList: [],
+      },
+    };
+
+    const findServerProjectListFn = async () => {
+      const [err, res] = await to(findServerProjectList());
+      if (!err && res.code === 200) {
+        projectList.value = res.data.map((t) => ({
+          ...t,
+          label: t.projectNumber,
+          value: t.projectNumber,
+        }));
+        WorkOrderRequirements.value.useProjectWrapperList.projectList = projectList.value;
+      }
+    };
+    findServerProjectListFn();
+
+    const getContractListByProjectNumber = async (projectNumber) => {
+      const [err, res] = await to(findByProjectNumber(projectNumber));
+      if (!err && res.code === 200) {
+        var contractCodeList = [];
+        contractCodeList = res.data.map((t) => ({
+          ...t,
+          label: t.code,
+          value: t.code,
+        }));
+        WorkOrderRequirements.value.useContractWrapperList.contractCodeList = contractCodeList;
+
+        useContractWrapperListChange(contractCodeList[0].code);
+      }
+    };
+    const useContractWrapperListChange = async (e) => {
+      var find1 = WorkOrderRequirements.value.useContractWrapperList.contractCodeList.find(
+        (t) => t.value === e
+      );
+      if (find1) {
+        var WorkOrderform = toRaw(WorkOrderRequirements.value.form);
+        var findToraw = toRaw(find1);
+        WorkOrderform = {
+          ...WorkOrderform,
+          ...findToraw,
+          serverStartTime: findToraw.serverStartDate,
+          serverEndTime: findToraw.serverEndDate,
+        };
+        WorkOrderRequirements.value.form = WorkOrderform;
+        WorkOrderRequirements.value.form.contractCode = WorkOrderform.code;
+      }
+    };
+
+    const findProviceOrgForCmcFn = async (pId, flag) => {
+      const [err, res] = await to(findProviceOrgForCmc({ pId }));
+      if (!err && res.code === 200) {
+        WorkOrderRequirements.value[flag].provinceList = res.data
+          ? res.data.map((t) => ({
+              label: t.orgName ? t.orgName.replace(/办事处/g, "") : "",
+              value: t.orgId,
+            }))
+          : [];
+      }
+    };
+
+    return {
+      stepActive,
+      editingSwitch,
+      getRef,
+      jobInfo,
+      servicePermission,
+      isEdit,
+      jobStatusList,
+      refList,
+      payType,
+      jobObj,
+      WorkOrderRequirements,
+      projectListBool,
+      bool,
+      jobformRef,
+
+      handleCancelBtnClick,
+      handleSaveBtnClick,
+      handleAdjustBtnClick,
+      byShowData,
+      validateJobform,
+    };
+  },
+});
+</script>
+<style lang="scss">
+.workorder-info {
+  height: calc(100% - 1rem);
+  overflow-y: auto;
+  padding: 0 10px;
+
+  .workorder-info-header {
+    box-shadow: 0px -0.03rem 0.11rem -0.03rem rgba(215, 220, 231, 0.3);
+    border-radius: 0.04rem;
+    padding: 0.2rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .info-item-switch {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    font-size: 0.16rem;
+    margin-top: 0.1rem;
+
+    span {
+      margin-right: 0.1rem;
+    }
+  }
+}
+</style>
